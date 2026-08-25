@@ -37,5 +37,9 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Superpowers brainstorming companion / worktrees
+.superpowers/
+.claude/worktrees/
+
 # Hidden grading — do NOT distribute to students
 data/grading/
