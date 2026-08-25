@@ -34,17 +34,24 @@ class MetricsReport(BaseModel):
     scenario_metrics: list[ScenarioMetric]
 
 
-def metric_from_state(state: dict[str, Any], expected_route: str, approval_required: bool) -> ScenarioMetric:
+def metric_from_state(
+    state: dict[str, Any],
+    expected_route: str,
+    approval_required: bool,
+    latency_ms: int = 0,
+) -> ScenarioMetric:
     events = state.get("events", []) or []
     errors = state.get("errors", []) or []
     actual_route = state.get("route")
     approval = state.get("approval")
-    nodes = [event.get("node", "unknown") for event in events]
+    nodes = [event.get("node", "unknown") for event in events if isinstance(event, dict)]
     retry_count = sum(1 for node in nodes if node == "retry")
     interrupt_count = sum(1 for node in nodes if node == "approval")
-    success = actual_route == expected_route and bool(state.get("final_answer") or state.get("pending_question"))
+    approval_observed = approval is not None or interrupt_count > 0
+    has_output = bool(state.get("final_answer") or state.get("pending_question"))
+    success = actual_route == expected_route and has_output
     if approval_required:
-        success = success and approval is not None
+        success = success and approval_observed
     return ScenarioMetric(
         scenario_id=str(state.get("scenario_id", "unknown")),
         success=success,
@@ -54,12 +61,15 @@ def metric_from_state(state: dict[str, Any], expected_route: str, approval_requi
         retry_count=retry_count,
         interrupt_count=interrupt_count,
         approval_required=approval_required,
-        approval_observed=approval is not None,
-        errors=list(errors),
+        approval_observed=approval_observed,
+        latency_ms=max(0, int(latency_ms)),
+        errors=[str(error) for error in errors],
     )
 
 
-def summarize_metrics(items: list[ScenarioMetric]) -> MetricsReport:
+def summarize_metrics(
+    items: list[ScenarioMetric], *, resume_success: bool = False
+) -> MetricsReport:
     if not items:
         raise ValueError("No scenario metrics to summarize")
     return MetricsReport(
@@ -68,7 +78,7 @@ def summarize_metrics(items: list[ScenarioMetric]) -> MetricsReport:
         avg_nodes_visited=mean(item.nodes_visited for item in items),
         total_retries=sum(item.retry_count for item in items),
         total_interrupts=sum(item.interrupt_count for item in items),
-        resume_success=False,
+        resume_success=resume_success,
         scenario_metrics=items,
     )
 
