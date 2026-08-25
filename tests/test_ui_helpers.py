@@ -3,6 +3,7 @@ from __future__ import annotations
 from ui.components import (
     RESET_KEYS,
     SESSION_DEFAULTS,
+    build_checkpoint_rows,
     build_resume_payload,
     extract_interrupt,
     normalize_events,
@@ -74,3 +75,31 @@ def test_session_defaults_and_reset_keys_never_touch_graph_or_checkpointer():
     assert "graph" not in RESET_KEYS
     assert "checkpointer" not in RESET_KEYS
     assert "thread_id" in RESET_KEYS
+
+
+class _FakeCheckpointTuple:
+    def __init__(self, checkpoint, metadata):
+        self.checkpoint = checkpoint
+        self.metadata = metadata
+
+
+def test_build_checkpoint_rows_reads_step_node_ts():
+    tuples = [
+        _FakeCheckpointTuple({"id": "chk-1", "ts": "2026-08-25T10:00:00Z"}, {"step": 0, "source": "input"}),
+        _FakeCheckpointTuple({"id": "chk-2", "ts": "2026-08-25T10:00:01Z"}, {"step": 1, "source": "intake"}),
+    ]
+    rows = build_checkpoint_rows(tuples)
+    assert rows == [
+        {"step": 0, "node": "input", "ts": "2026-08-25T10:00:00Z"},
+        {"step": 1, "node": "intake", "ts": "2026-08-25T10:00:01Z"},
+    ]
+
+
+def test_build_checkpoint_rows_handles_missing_metadata():
+    tuples = [_FakeCheckpointTuple({"id": "chk-1", "ts": ""}, {})]
+    rows = build_checkpoint_rows(tuples)
+    assert rows == [{"step": 0, "node": "chk-1", "ts": ""}]
+
+
+def test_build_checkpoint_rows_empty_input():
+    assert build_checkpoint_rows([]) == []

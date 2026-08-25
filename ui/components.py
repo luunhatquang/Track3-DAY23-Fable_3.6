@@ -71,3 +71,19 @@ def extract_interrupt(result: Any) -> dict[str, Any] | None:
 def render_status_badge(status: str) -> str:
     label, tone = STATUS_TO_LABEL.get(status, (status.replace("_", " ").title() or "Unknown", "muted"))
     return f'<span class="badge badge-{tone}"><span class="badge-dot"></span>{label}</span>'
+
+
+def build_checkpoint_rows(checkpoint_tuples: list[Any]) -> list[dict[str, Any]]:
+    """Normalize LangGraph CheckpointTuple objects into display rows, newest last."""
+    rows: list[dict[str, Any]] = []
+    for index, item in enumerate(checkpoint_tuples):
+        checkpoint = getattr(item, "checkpoint", None) or {}
+        metadata = getattr(item, "metadata", None) or {}
+        rows.append(
+            {
+                "step": metadata.get("step", index),
+                "node": metadata.get("source") or checkpoint.get("id", "unknown"),
+                "ts": checkpoint.get("ts", ""),
+            }
+        )
+    return rows
