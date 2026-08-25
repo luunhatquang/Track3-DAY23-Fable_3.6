@@ -5,7 +5,7 @@ from langgraph_agent_lab.state import Route, Scenario, initial_state
 def test_scenario_validation():
     scenario = Scenario(id="x", query="hello", expected_route=Route.SIMPLE)
     state = initial_state(scenario)
-    assert state["thread_id"] == "thread-x"
+    assert state["thread_id"].startswith("thread-x-")
     assert state["attempt"] == 0
     assert state["events"] == []
 
@@ -22,6 +22,11 @@ def test_initial_state_has_required_fields():
     assert "tool_results" in state
     assert "errors" in state
     assert "events" in state
+    assert state["should_retry"] is False
+    assert state["evaluation_result"] == ""
+    assert state["pending_question"] is None
+    assert state["proposed_action"] is None
+    assert state["approval"] is None
 
 
 def test_load_scenarios():

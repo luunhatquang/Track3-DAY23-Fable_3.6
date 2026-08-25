@@ -4,8 +4,6 @@ These tests verify correct routing logic. They will fail with NotImplementedErro
 until you implement the routing functions in routing.py.
 """
 
-import pytest
-
 from langgraph_agent_lab.routing import (
     route_after_approval,
     route_after_classify,
@@ -67,3 +65,14 @@ def test_route_after_evaluate_success():
 
 def test_route_after_evaluate_retry():
     assert route_after_evaluate({"evaluation_result": "needs_retry"}) == "retry"
+
+
+def test_approval_missing_or_malformed_fails_closed():
+    assert route_after_approval({}) == "clarify"
+    assert route_after_approval({"approval": None}) == "clarify"
+    assert route_after_approval({"approval": {"approved": "yes"}}) == "clarify"
+
+
+def test_retry_missing_or_malformed_counters_is_safe():
+    assert route_after_retry({}) == "tool"
+    assert route_after_retry({"attempt": "bad", "max_attempts": "bad"}) == "tool"

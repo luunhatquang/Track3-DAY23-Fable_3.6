@@ -1,0 +1,18 @@
+flowchart TD
+    START([START]) --> intake --> classify
+    classify -->|simple / unknown| answer
+    classify -->|tool| tool
+    classify -->|missing_info| clarify
+    classify -->|risky| risky_action --> approval
+    classify -->|error| retry
+    approval -->|approved| tool
+    approval -->|rejected / invalid| clarify
+    tool --> evaluate
+    evaluate -->|success| answer
+    evaluate -->|needs_retry| retry
+    retry -->|attempt less than max| tool
+    retry -->|attempt at max| dead_letter
+    answer --> finalize
+    clarify --> finalize
+    dead_letter --> finalize
+    finalize --> END([END])
