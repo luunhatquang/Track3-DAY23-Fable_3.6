@@ -1,22 +1,36 @@
-.PHONY: install test lint typecheck run-scenarios grade-local clean
+PYTHON ?= python3
+
+.PHONY: install install-google install-openai install-anthropic install-ui test lint typecheck run-scenarios grade-local clean
 
 install:
-	pip install -e '.[dev]'
+	$(PYTHON) -m pip install -e '.[dev,sqlite]'
+
+install-google:
+	$(PYTHON) -m pip install -e '.[google]'
+
+install-openai:
+	$(PYTHON) -m pip install -e '.[openai]'
+
+install-anthropic:
+	$(PYTHON) -m pip install -e '.[anthropic]'
+
+install-ui:
+	$(PYTHON) -m pip install -e '.[ui]'
 
 test:
-	pytest
+	$(PYTHON) -m pytest
 
 lint:
-	ruff check src tests
+	$(PYTHON) -m ruff check src tests
 
 typecheck:
-	mypy src
+	$(PYTHON) -m mypy src
 
 run-scenarios:
-	python -m langgraph_agent_lab.cli run-scenarios --config configs/lab.yaml --output outputs/metrics.json
+	$(PYTHON) -m langgraph_agent_lab.cli run-scenarios --config configs/lab.yaml --output outputs/metrics.json
 
 grade-local:
-	python -m langgraph_agent_lab.cli validate-metrics --metrics outputs/metrics.json
+	$(PYTHON) -m langgraph_agent_lab.cli validate-metrics --metrics outputs/metrics.json
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov dist build *.egg-info outputs/*.json
