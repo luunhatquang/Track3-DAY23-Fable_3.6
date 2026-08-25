@@ -5,6 +5,8 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+from langgraph.graph.state import Checkpointer
+
 
 def _sqlite_path(database_url: str | None) -> str:
     """Normalize a local SQLite path while rejecting unsupported URLs."""
@@ -23,7 +25,7 @@ def _sqlite_path(database_url: str | None) -> str:
     return path
 
 
-def build_checkpointer(kind: str = "memory", database_url: str | None = None) -> object | None:
+def build_checkpointer(kind: str = "memory", database_url: str | None = None) -> Checkpointer:
     """Return a LangGraph checkpointer.
 
     SQLite connections remain owned by the returned saver so graph and UI callers

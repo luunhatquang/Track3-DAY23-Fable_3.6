@@ -56,13 +56,13 @@ flowchart LR
 
 | Scenario | Expected | Actual | Success | Nodes | Retries | Approvals | Latency (ms) | Errors |
 |---|---|---|---:|---:|---:|---:|---:|---|
-| S01_simple | simple | simple | yes | 4 | 0 | 0 | 3446 | — |
-| S02_tool | tool | tool | yes | 6 | 0 | 0 | 1973 | — |
-| S03_missing | missing_info | missing_info | yes | 4 | 0 | 0 | 937 | — |
-| S04_risky | risky | risky | yes | 8 | 0 | 1 | 1907 | — |
-| S05_error | error | error | yes | 10 | 2 | 0 | 3139 | Retry attempt 1 recorded after an unsatisfactory tool result.; Retry attempt 2 recorded after an unsatisfactory tool result. |
-| S06_delete | risky | risky | yes | 8 | 0 | 1 | 2839 | — |
-| S07_dead_letter | error | error | yes | 5 | 1 | 0 | 865 | Retry attempt 1 recorded after an unsatisfactory tool result. |
+| S01_simple | simple | simple | yes | 4 | 0 | 0 | 7926 | — |
+| S02_tool | tool | tool | yes | 6 | 0 | 0 | 4203 | — |
+| S03_missing | missing_info | missing_info | yes | 4 | 0 | 0 | 1940 | — |
+| S04_risky | risky | risky | yes | 8 | 0 | 1 | 3583 | — |
+| S05_error | error | error | yes | 10 | 2 | 0 | 4506 | Retry attempt 1 recorded after an unsatisfactory tool result.; Retry attempt 2 recorded after an unsatisfactory tool result. |
+| S06_delete | risky | risky | yes | 8 | 0 | 1 | 2997 | — |
+| S07_dead_letter | error | error | yes | 5 | 1 | 0 | 1227 | Retry attempt 1 recorded after an unsatisfactory tool result. |
 
 ## 6. Failure analysis
 

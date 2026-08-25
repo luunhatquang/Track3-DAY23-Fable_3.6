@@ -11,6 +11,7 @@ from typing import Annotated
 import typer
 import yaml
 from dotenv import load_dotenv
+from langchain_core.runnables import RunnableConfig
 
 from .graph import build_graph
 from .metrics import MetricsReport, metric_from_state, summarize_metrics, write_metrics
@@ -40,10 +41,10 @@ def run_scenarios(
         raise typer.BadParameter(f"Unable to build graph: {exc}") from exc
 
     metrics = []
-    run_configs: list[dict[str, dict[str, str]]] = []
+    run_configs: list[RunnableConfig] = []
     for scenario in scenarios:
         state = initial_state(scenario)
-        run_config = {"configurable": {"thread_id": state["thread_id"]}}
+        run_config: RunnableConfig = {"configurable": {"thread_id": state["thread_id"]}}
         run_configs.append(run_config)
         started = perf_counter()
         try:
@@ -62,9 +63,7 @@ def run_scenarios(
             )
         )
 
-    resume_success = checkpointer_kind == "sqlite" and _has_checkpoint_history(
-        graph, run_configs
-    )
+    resume_success = checkpointer_kind == "sqlite" and _has_checkpoint_history(graph, run_configs)
     report = summarize_metrics(metrics, resume_success=resume_success)
     write_metrics(report, output)
     report_path = _optional_string(cfg, "report_path")
@@ -112,7 +111,7 @@ def _optional_string(config: Mapping[str, object], key: str) -> str | None:
     return value.strip()
 
 
-def _has_checkpoint_history(graph: object, configs: list[dict[str, dict[str, str]]]) -> bool:
+def _has_checkpoint_history(graph: object, configs: list[RunnableConfig]) -> bool:
     """Return true only when SQLite history was actually readable after execution."""
     history_reader = getattr(graph, "get_state_history", None)
     if not callable(history_reader):
