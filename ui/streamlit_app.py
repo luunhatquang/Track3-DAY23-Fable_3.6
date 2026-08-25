@@ -7,18 +7,17 @@ from typing import Any
 from uuid import uuid4
 
 import streamlit as st
-from dotenv import load_dotenv
-
-from langgraph_agent_lab.graph import build_graph
-from langgraph_agent_lab.persistence import build_checkpointer
-from langgraph_agent_lab.state import Scenario, initial_state
-
 from components import (
     RESET_KEYS,
     SESSION_DEFAULTS,
     extract_interrupt,
     render_status_badge,
 )
+from dotenv import load_dotenv
+
+from langgraph_agent_lab.graph import build_graph
+from langgraph_agent_lab.persistence import build_checkpointer
+from langgraph_agent_lab.state import Scenario, initial_state
 
 APP_DIR = Path(__file__).parent
 
@@ -60,11 +59,19 @@ def new_ticket_thread() -> None:
 
 
 def run_ticket(query: str, max_attempts: int) -> None:
-    graph, _ = get_graph(st.session_state["checkpointer_kind"], st.session_state["interrupt_enabled"])
+    graph, _ = get_graph(
+        st.session_state["checkpointer_kind"],
+        st.session_state["interrupt_enabled"],
+    )
     thread_id = st.session_state["thread_id"] or f"ui-{uuid4().hex[:8]}"
     st.session_state["thread_id"] = thread_id
 
-    scenario = Scenario(id="ui-ticket", query=query, expected_route="simple", max_attempts=max_attempts)
+    scenario = Scenario(
+        id="ui-ticket",
+        query=query,
+        expected_route="simple",
+        max_attempts=max_attempts,
+    )
     state = initial_state(scenario)
     state["thread_id"] = thread_id
     config = {"configurable": {"thread_id": thread_id}}
@@ -83,7 +90,10 @@ def run_ticket(query: str, max_attempts: int) -> None:
 def resume_ticket(decision: dict[str, Any]) -> None:
     from langgraph.types import Command
 
-    graph, _ = get_graph(st.session_state["checkpointer_kind"], st.session_state["interrupt_enabled"])
+    graph, _ = get_graph(
+        st.session_state["checkpointer_kind"],
+        st.session_state["interrupt_enabled"],
+    )
     thread_id = st.session_state["thread_id"]
     config = {"configurable": {"thread_id": thread_id}}
 
@@ -122,12 +132,21 @@ def render_sidebar() -> None:
 
 def render_ticket_runner_tab() -> None:
     st.markdown('<h3 class="section-title">Ticket Runner</h3>', unsafe_allow_html=True)
-    query = st.text_area("Query", placeholder="Mô tả yêu cầu của bạn...", key="ticket_query", height=100)
+    query = st.text_area(
+        "Query",
+        placeholder="Mô tả yêu cầu của bạn...",
+        key="ticket_query",
+        height=100,
+    )
     max_attempts = st.number_input("Max attempts", min_value=1, max_value=10, value=3, step=1)
 
     disabled = st.session_state["pending_interrupt"] is not None
     if disabled:
-        st.markdown('<p class="muted">Đang chờ approval — xử lý ở tab Approval trước khi chạy ticket mới.</p>', unsafe_allow_html=True)
+        st.markdown(
+            '<p class="muted">Đang chờ approval — '
+            "xử lý ở tab Approval trước khi chạy ticket mới.</p>",
+            unsafe_allow_html=True,
+        )
 
     if st.button("Run", type="primary", disabled=disabled, key="run_ticket_btn"):
         if not query.strip():
@@ -151,7 +170,12 @@ def render_ticket_runner_tab() -> None:
         status = "pending_approval" if st.session_state["pending_interrupt"] is not None else route
         st.markdown(render_status_badge(status), unsafe_allow_html=True)
     st.markdown(f"**Risk level:** {state.get('risk_level', 'unknown')}")
-    st.text_input("Thread ID (copyable)", value=st.session_state["thread_id"] or "", disabled=True, key="thread_id_display")
+    st.text_input(
+        "Thread ID (copyable)",
+        value=st.session_state["thread_id"] or "",
+        disabled=True,
+        key="thread_id_display",
+    )
     if state.get("final_answer"):
         st.markdown(f"**Final answer:** {state['final_answer']}")
     elif state.get("pending_question"):

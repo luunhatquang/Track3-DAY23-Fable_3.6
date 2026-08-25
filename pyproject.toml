@@ -50,3 +50,4 @@ ignore = ["ANN101", "ANN102"]
 minversion = "8.0"
 addopts = "-q --strict-markers"
 testpaths = ["tests"]
+pythonpath = ["src", "."]

@@ -56,7 +56,7 @@ def build_resume_payload(approved: bool, reviewer: str, comment: str) -> dict[st
     return {"approved": bool(approved), "reviewer": clean_reviewer, "comment": comment.strip()}
 
 
-def extract_interrupt(result: Any) -> dict[str, Any] | None:
+def extract_interrupt(result: object) -> dict[str, Any] | None:
     """Return the interrupt payload dict if the graph run paused for approval, else None."""
     if not isinstance(result, dict):
         return None
@@ -69,7 +69,8 @@ def extract_interrupt(result: Any) -> dict[str, Any] | None:
 
 
 def render_status_badge(status: str) -> str:
-    label, tone = STATUS_TO_LABEL.get(status, (status.replace("_", " ").title() or "Unknown", "muted"))
+    fallback = (status.replace("_", " ").title() or "Unknown", "muted")
+    label, tone = STATUS_TO_LABEL.get(status, fallback)
     return f'<span class="badge badge-{tone}"><span class="badge-dot"></span>{label}</span>'
 
 
